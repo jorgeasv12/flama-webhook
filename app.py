@@ -15,22 +15,21 @@ def webhook():
         data = request.get_json(force=True)
         event_type = data.get("event", "sin_evento")
 
-        # Crear carpeta si no existe (opcional, en Render no sirve, pero útil localmente)
-        os.makedirs("pedidos", exist_ok=True)
+        # Asegurar carpeta en Render Disk
+        folder_path = "/mnt/data/pedidos"
+        os.makedirs(folder_path, exist_ok=True)
 
-        # Guardar archivo con nombre descriptivo (solo útil en desarrollo local)
+        # Generar nombre de archivo con evento y timestamp
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"{event_type}_{timestamp}.json"
+        filepath = os.path.join(folder_path, filename)
 
-        with open(os.path.join("pedidos", filename), "w", encoding="utf-8") as f:
+        # Guardar el JSON recibido
+        with open(filepath, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2, ensure_ascii=False)
 
-        # ✅ Imprimir información en Logs de Render
-        print(f"[OK] Pedido recibido. Evento: {event_type}")
-        print("Contenido del pedido:")
-        print(json.dumps(data, indent=2, ensure_ascii=False))
-
-        return jsonify({"status": "ok", "message": "Evento recibido"}), 200
+        print(f"[OK] Pedido guardado en: {filepath}")
+        return jsonify({"status": "ok", "message": f"Pedido guardado: {filename}"}), 200
 
     except Exception as e:
         print(f"[ERROR] {str(e)}")
