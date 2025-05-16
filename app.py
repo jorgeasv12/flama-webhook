@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 import os
 import json
 from datetime import datetime
+import traceback  # 👈 para mostrar el error real
 
 app = Flask(__name__)
 
@@ -13,18 +14,18 @@ def home():
 def webhook():
     try:
         data = request.get_json(force=True)
+        if not data:
+            raise ValueError("No se recibió contenido JSON válido.")
+
         event_type = data.get("event", "sin_evento")
 
-        # Asegurar carpeta en Render Disk
         folder_path = "/mnt/data/pedidos"
         os.makedirs(folder_path, exist_ok=True)
 
-        # Generar nombre de archivo con evento y timestamp
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"{event_type}_{timestamp}.json"
         filepath = os.path.join(folder_path, filename)
 
-        # Guardar el JSON recibido
         with open(filepath, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2, ensure_ascii=False)
 
@@ -33,8 +34,8 @@ def webhook():
 
     except Exception as e:
         print(f"[ERROR] {str(e)}")
+        traceback.print_exc()  # 👈 muestra el error completo en los logs
         return jsonify({"status": "error", "message": str(e)}), 500
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
-
