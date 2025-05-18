@@ -37,5 +37,12 @@ def webhook():
         traceback.print_exc()  # 👈 muestra el error completo en los logs
         return jsonify({"status": "error", "message": str(e)}), 500
 
+from flask import send_from_directory
+
+@app.route('/descargar/<filename>', methods=['GET'])
+def descargar_json(filename):
+    return send_from_directory('/mnt/data/pedidos', filename, as_attachment=True)
+
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
