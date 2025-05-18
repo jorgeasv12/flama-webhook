@@ -42,7 +42,19 @@ from flask import send_from_directory
 @app.route('/descargar/<filename>', methods=['GET'])
 def descargar_json(filename):
     return send_from_directory('/mnt/data/pedidos', filename, as_attachment=True)
+@app.route('/listado', methods=['GET'])
+def listado_archivos():
+    try:
+        folder_path = "/mnt/data/pedidos"
+        archivos = os.listdir(folder_path)
+        archivos = [f for f in archivos if f.endswith(".json")]
+        return jsonify(archivos), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
+
+
